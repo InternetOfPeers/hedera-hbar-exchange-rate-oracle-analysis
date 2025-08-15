@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HBAR Exchange Rate Oracle Analysis - Interactive Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.1.0/dist/chartjs-plugin-zoom.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.1.0/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            /* max-width: 1200px; */
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin: 20px 0;
+            margin-top: 10px;
+        }
+
+        .controls {
+            margin: 20px 0;
+            margin-top: 0;
+            margin-bottom: 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .controls button {
+            margin: 5px;
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .controls button:hover {
+            background-color: #0056b3;
+        }
+
+        .controls button.active {
+            background-color: #28a745;
+            box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+        }
+
+        .controls button.active:hover {
+            background-color: #218838;
+        }
+
+        .controls .threshold-control {
+            margin-left: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls .threshold-control label {
+            font-weight: 500;
+            color: #495057;
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .controls .threshold-control input {
+            width: 60px;
+            padding: 4px 8px;
+            border: 1px solid #ced4da;
+            border-radius: 3px;
+            font-size: 14px;
+            text-align: center;
+            background-color: #fff;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .controls .threshold-control input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .controls .threshold-control input:hover {
+            border-color: #adb5bd;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .stat-value.outliers-warning {
+            color: #dc3545;
+        }
+
+        .data-section {
+            margin-top: 30px;
+        }
+
+        #dataTextarea {
+            width: 100%;
+            height: 200px;
+            font-family: monospace;
+            font-size: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+        }
+
+        .update-button {
+            background-color: #28a745 !important;
+            margin-top: 10px;
+        }
+
+        .update-button:hover {
+            background-color: #218838 !important;
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 500px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            font-size: 18px;
+            color: #6c757d;
+        }
+
+        .loading::after {
+            content: "";
+            width: 20px;
+            height: 20px;
+            border: 3px solid #007bff;
+            border-top: 3px solid transparent;
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>HBAR Exchange Rate Oracle Analysis - Interactive Chart</h1>
+        <p>Compare Hedera Oracle Exchange Rate vs CMC prices with percentage differences.<br />Hedera updates prices
+            every hour. For CMC I used 5 mins, 15 mins, and 1 hour intervals in the past, but starting from mid August
+            I'll run a script for having all the new data at 5 mins interval.
+        </p>
+        <div class="controls">
+            <button onclick="resetZoom()">Reset Zoom</button>
+            <button id="last1dBtn" onclick="showLastXDays(1)">Last 1 Day</button>
+            <button id="last10dBtn" onclick="showLastXDays(10)" class="active">Last 10 Days</button>
+            <button id="last30dBtn" onclick="showLastXDays(30)">Last 30 Days</button>
+            <button id="allDataBtn" onclick="showAllData()">Show All Data</button>
+            <button onclick="togglePercentageDiff()">Toggle % Difference</button>
+            <button id="toggleTooltipBtn" onclick="toggleTooltip()">Hide Tooltip</button>
+            <div class="threshold-control">
+                <label for="acceptableRangeInput">Acceptable Range Threshold:</label>
+                <input type="number" id="acceptableRangeInput" value="3" min="0" step="0.1">%
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div id="loading" class="loading">Loading chart data...</div>
+            <canvas id="priceChart" style="display: none;"></canvas>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div>Max Difference</div>
+                <div class="stat-value" id="maxDiff">-</div>
+            </div>
+            <div class="stat-box">
+                <div>Min Difference</div>
+                <div class="stat-value" id="minDiff">-</div>
+            </div>
+            <div class="stat-box">
+                <div>Median Difference</div>
+                <div class="stat-value" id="medianDiff">-</div>
+            </div>
+            <div class="stat-box">
+                <div>Average Difference</div>
+                <div class="stat-value" id="avgDiff">-</div>
+            </div>
+            <div class="stat-box">
+                <div>Outliers Data Point Count</div>
+                <div class="stat-value" id="outliersCount">-</div>
+            </div>
+        </div>
+
+        <div class="data-section">
+            <h2>Data Management</h2>
+            <p>
+                The HTML page contains a static compressed version of the CSV data, but you can
+                paste new data here and click "Update Chart" to refresh the visualization.<br />
+                The first line is skipped so it can contain the headers or any comment.<br />
+                The chart supports both timestamp and human readable date formats, e.g.:<br /><br />
+                <code>
+                Date,CMC,HEDERA<br/>
+                2025/07/04T07:00,0.1561745,0.15735433<br/>
+                2025/07/04T08:00,0.15483,0.15604<br/>
+                ...<br/>
+                1756170900,0.2334577,0.23047166<br/>
+                1756171680,0.234483,0.23047166<br/>
+                </code>
+            </p>
+            <textarea id="dataTextarea" placeholder="Paste your data here in the format: Date\tCMC\tHedera"
+                style="width: 50%;"></textarea>
+            <button class="update-button" onclick="updateDataFromTextarea()">Update Chart</button>
+        </div>
+    </div>
+
+    <script>
+        // Application state
+        const state = {
+            // Compressed CSV data (will be decompressed on load)
+            compressedCsvData: "H4sICFgyrmgAA3VuY29tcHJlc3NlZC1oYmFyLXByaWNlcy5jc3YAPZA7DsJADER7zhIhf8dOiUgkGhpuQMENuL9YEnu7kZ7ns7u9v5/l/rwvj33bX7cLhzNYjGihK7vDgUOFuqkWBzWPTD8UaHio+Irm4qqHMvzlyUWluUV4NZFOjiw+clyqKWa+0txHkCwVK1Dc5j5nLb95TH/0PhNda7/kzDfufaNJ+LzM0VX5Zr1Pkw2Vn5g8e5/aavX+cdjcpfcJk5x+lfHT+AHR9RRFjwEAAA==",
+            csvData: null, // Will be decompressed from compressedCsvData
+            chart: null,
+            parsedData: [],
+            showPercentageDiff: true,
+            acceptableRangeLimit: 3,
+            latestActiveButton: 'last10dBtn'
+        };
+
+        // Cache for decompressed data
+        let decompressedCsvData = null;
+
+        // Optimized decompress function for gzip data
+        function getDecompressedCsvData() {
+            if (!decompressedCsvData) {
+                console.time('Data decompression');
+                try {
+                    // Decode base64 to binary data
+                    const binaryString = atob(state.compressedCsvData);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    // Decompress with pako
+                    decompressedCsvData = pako.inflate(bytes, { to: 'string' });
+                } catch (error) {
+                    console.error('Decompression failed:', error);
+                    decompressedCsvData = '';
+                }
+                console.timeEnd('Data decompression');
+            }
+            return decompressedCsvData;
+        }
+
+        // Update state to use decompressed data
+        Object.defineProperty(state, 'csvData', {
+            get: function () {
+                return getDecompressedCsvData();
+            }
+        });
+
+        // Add other state properties
+        state.chart = null;
+        state.parsedData = [];
+        state.showPercentageDiff = true;
+        state.acceptableRangeLimit = 3;
+        state.latestActiveButton = 'last10dBtn';
+        state.showTooltip = true;
+
+        // Utility functions
+        const utils = {
+            parseData(dataString) {
+                console.time('Data parsing');
+                const lines = dataString.trim().split('\n');
+                const result = [];
+
+                // Skip header
+                for (let i = 1; i < lines.length; i++) {
+                    const parts = lines[i].split(/[\t,]/);
+                    if (parts.length >= 3) {
+                        const dateStr = parts[0].trim();
+                        const cmcStr = parts[1].trim();
+                        const hederaStr = parts[2].trim();
+
+                        // Parse date - support both regular dates and Unix timestamps
+                        let date;
+                        if (/^\d+$/.test(dateStr)) {
+                            // Unix timestamp (all digits)
+                            const timestamp = parseInt(dateStr);
+                            // Handle both seconds and milliseconds timestamps
+                            date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
+                        } else {
+                            // Regular date string
+                            date = new Date(dateStr.replace('T', ' '));
+                        }
+
+                        const cmc = parseFloat(cmcStr);
+                        const hedera = parseFloat(hederaStr);
+
+                        if (!isNaN(date.getTime()) && !isNaN(cmc) && !isNaN(hedera)) {
+                            result.push({
+                                date,
+                                cmc,
+                                hedera,
+                                percentDiff: ((hedera - cmc) / cmc) * 100
+                            });
+                        }
+                    }
+                }
+
+                // Sort once at the end
+                result.sort((a, b) => a.date - b.date);
+                console.timeEnd('Data parsing');
+                return result;
+            },
+            truncateToDecimals(value, decimals = 4) {
+                const multiplier = Math.pow(10, decimals);
+                return Math.trunc(value * multiplier) / multiplier;
+            },
+            isOutlier(diff) {
+                return Math.abs(diff) > state.acceptableRangeLimit;
+            },
+            createColorMap(data, isOutlier) {
+                return data.map(item => isOutlier(item.percentDiff));
+            }
+        };
+
+        // Chart configuration
+        const chartConfig = {
+            createDatasets() {
+                const datasets = [
+                    {
+                        label: 'Hedera Price',
+                        data: state.parsedData.map(item => ({ x: item.date, y: item.hedera })),
+                        borderColor: '#8A2BE2',
+                        backgroundColor: 'rgba(138, 43, 226, 0.2)',
+                        fill: false,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'CMC Price',
+                        data: state.parsedData.map(item => ({ x: item.date, y: item.cmc })),
+                        borderColor: '#00BFFF',
+                        backgroundColor: 'rgba(0, 191, 255, 0.2)',
+                        fill: false,
+                        yAxisID: 'y'
+                    }
+                ];
+
+                if (state.showPercentageDiff) {
+                    const outlierMap = utils.createColorMap(state.parsedData, utils.isOutlier);
+                    datasets.push({
+                        type: 'bar',
+                        label: 'Hedera vs CMC Difference',
+                        data: state.parsedData.map(item => ({ x: item.date, y: item.percentDiff })),
+                        borderColor: outlierMap.map(isOut => isOut ? 'rgb(255, 0, 0)' : 'rgb(255, 206, 86)'),
+                        backgroundColor: outlierMap.map(isOut => isOut ? 'rgba(255, 0, 0, 1)' : 'rgba(255, 206, 86, 0.7)'),
+                        //borderWidth: outlierMap.map(isOut => isOut ? 3 : 2),
+                        //borderRadius: outlierMap.map(isOut => isOut ? 4 : 0),
+                        yAxisID: 'y1',
+                        barPercentage: 0.98,
+                        categoryPercentage: 0.98,
+                    });
+                }
+                return datasets;
+            },
+
+            createAnnotations() {
+                if (!state.showPercentageDiff) return { display: false, annotations: {} };
+
+                return {
+                    display: true,
+                    annotations: {
+                        acceptableRange: {
+                            type: 'box',
+                            yMin: -state.acceptableRangeLimit,
+                            yMax: state.acceptableRangeLimit,
+                            backgroundColor: 'rgba(0, 255, 0, 0.05)',
+                            borderColor: 'rgba(0, 255, 0, 0.3)',
+                            borderWidth: 1,
+                            yScaleID: 'y1'
+                        },
+                        outlierLineTop: {
+                            type: 'line',
+                            yMin: state.acceptableRangeLimit,
+                            yMax: state.acceptableRangeLimit,
+                            borderColor: 'rgba(255, 0, 0, 0.8)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            yScaleID: 'y1'
+                        },
+                        outlierLineBottom: {
+                            type: 'line',
+                            yMin: -state.acceptableRangeLimit,
+                            yMax: -state.acceptableRangeLimit,
+                            borderColor: 'rgba(255, 0, 0, 0.8)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            yScaleID: 'y1'
+                        }
+                    }
+                };
+            },
+
+            getOptions() {
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    elements: {
+                        point: { pointStyle: false },
+                        line: { borderJoinStyle: 'round' }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                tooltipFormat: 'MMM dd, yyyy HH:mm',
+                                displayFormats: {
+                                    millisecond: 'HH:mm:ss.SSS',
+                                    second: 'HH:mm:ss',
+                                    minute: 'HH:mm',
+                                    hour: 'MMM dd HH:mm',
+                                    day: 'MMM dd',
+                                    week: 'MMM dd',
+                                    month: 'MMM yyyy',
+                                    quarter: 'MMM yyyy',
+                                    year: 'yyyy'
+                                }
+                            },
+                            title: { display: true, text: 'Date UTC' },
+                            ticks: { source: 'data', autoSkip: true, maxRotation: 45 },
+                            grid: { offset: false },
+                            offset: true
+                        },
+                        y: {
+                            position: 'left',
+                            title: { display: true, text: 'Price (USD)' },
+                            ticks: {
+                                callback: value => '$' + utils.truncateToDecimals(value).toFixed(4)
+                            }
+                        },
+                        y1: {
+                            display: state.showPercentageDiff,
+                            position: 'right',
+                            title: { display: true, text: 'Percentage Difference (%)' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            onClick: chartEvents.onLegendClick,
+                            labels: {
+                                generateLabels: function (chart) {
+                                    const original = Chart.defaults.plugins.legend.labels.generateLabels;
+                                    const labels = original.call(this, chart);
+                                    // Override color for the percentage difference dataset
+                                    labels.forEach(label => {
+                                        if (label.text === 'Hedera vs CMC Difference') {
+                                            label.fillStyle = 'rgb(255, 206, 86)';
+                                            label.strokeStyle = 'rgb(255, 206, 86)';
+                                        }
+                                    });
+                                    return labels;
+                                }
+                            }
+                        },
+                        zoom: {
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x',
+                                onZoomComplete: () => {
+                                    statsManager.update();
+                                    ui.setActiveButton(null);
+                                }
+                            }
+                        },
+                        tooltip: {
+                            enabled: state.showTooltip,
+                            position: 'hederaFixed',
+                            callbacks: {
+                                title: context => {
+                                    if (context.length > 0) {
+                                        const date = new Date(context[0].parsed.x);
+                                        return date.toLocaleString('en-US', {
+                                            month: 'short',
+                                            day: '2-digit',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            hour12: false,
+                                            timeZone: 'UTC',
+                                            timeZoneName: 'short'
+                                        });
+                                    }
+                                    return '';
+                                },
+                                label: context => {
+                                    const { label } = context.dataset;
+                                    let value = context.parsed.y;
+                                    if (label.includes('Price')) {
+                                        value = utils.truncateToDecimals(value).toFixed(4);
+                                    } else if (label.includes('Difference')) {
+                                        value = value.toFixed(2) + '%';
+                                    }
+                                    return `${value}: ${label}`;
+                                }
+                            }
+                        },
+                        annotation: this.createAnnotations()
+                    }
+                };
+            }
+        };
+
+        // Chart event handlers
+        const chartEvents = {
+            onLegendClick(e, legendItem, legend) {
+                const index = legendItem.datasetIndex;
+                const chart = legend.chart;
+                chart.setDatasetVisibility(index, !chart.isDatasetVisible(index));
+                if (legendItem.text === 'Hedera vs CMC Difference') {
+                    state.showPercentageDiff = !state.showPercentageDiff;
+                    chart.options.scales.y1.display = state.showPercentageDiff;
+                    if (chart.options.plugins.annotation) {
+                        chart.options.plugins.annotation.display = state.showPercentageDiff;
+                        Object.values(chart.options.plugins.annotation.annotations || {})
+                            .forEach(annotation => annotation.display = state.showPercentageDiff);
+                    }
+                }
+                chart.update();
+            }
+        };
+
+        // Chart management
+        const chartManager = {
+            create() {
+                state.acceptableRangeLimit = parseFloat(document.getElementById('acceptableRangeInput')?.value) || 3;
+                const ctx = document.getElementById('priceChart').getContext('2d');
+
+                // Register custom tooltip positioner
+                Chart.Tooltip.positioners.fixedVerticalMouse = function (elements, eventPosition) {
+                    if (elements.length > 0 && eventPosition) {
+                        const chart = this.chart || this._chart;
+
+                        // Follow mouse vertical position with bounds checking
+                        const chartArea = chart.chartArea;
+                        const minY = chartArea.top + 20; // 20px from top
+                        const maxY = chartArea.bottom - 60; // 60px from bottom (tooltip height)
+
+                        return {
+                            x: eventPosition.x,
+                            y: Math.max(minY, Math.min(eventPosition.y, maxY))
+                        };
+                    }
+                    // Fallback to average positioning
+                    return Chart.Tooltip.positioners.average.call(this, elements);
+                };
+
+                // Register custom tooltip positioner for Hedera value positioning
+                Chart.Tooltip.positioners.hederaFixed = function (elements, eventPosition) {
+                    if (elements.length > 0 && eventPosition) {
+                        const chart = this.chart || this._chart;
+
+                        // Find the Hedera price dataset element
+                        let hederaElement = null;
+                        for (let element of elements) {
+                            const dataset = chart.data.datasets[element.datasetIndex];
+                            if (dataset.label && dataset.label.includes('Hedera Price')) {
+                                hederaElement = element;
+                                break;
+                            }
+                        }
+
+                        // If we found the Hedera element, use its Y position
+                        if (hederaElement) {
+                            const chartArea = chart.chartArea;
+                            const tooltipHeight = 60; // Approximate tooltip height
+                            const padding = 20;
+
+                            // Use the Hedera price point's Y position
+                            let targetY = hederaElement.element.y;
+
+                            // Ensure tooltip stays within chart bounds
+                            const minY = chartArea.top + padding;
+                            const maxY = chartArea.bottom - tooltipHeight - padding;
+                            targetY = Math.max(minY, Math.min(targetY, maxY));
+
+                            return {
+                                x: eventPosition.x,
+                                y: targetY
+                            };
+                        }
+                    }
+                    // Fallback to average positioning
+                    return Chart.Tooltip.positioners.average.call(this, elements);
+                };
+
+                // Register custom crosshair plugin
+                const crosshairPlugin = {
+                    id: 'crosshair',
+                    beforeDraw: (chart) => {
+                        if (chart.tooltip._active && chart.tooltip._active.length) {
+                            const ctx = chart.ctx;
+                            const activePoint = chart.tooltip._active[0];
+                            const x = activePoint.element.x;
+                            const topY = chart.scales.y.top;
+                            const bottomY = chart.scales.y.bottom;
+                            // Save the current state
+                            ctx.save();
+                            // Draw the vertical line
+                            ctx.beginPath();
+                            ctx.setLineDash([5, 5]);
+                            ctx.moveTo(x, topY);
+                            ctx.lineTo(x, bottomY);
+                            ctx.lineWidth = 1;
+                            ctx.strokeStyle = '#aaa';
+                            ctx.stroke();
+                            // Restore the state
+                            ctx.restore();
+                        }
+                    }
+                };
+
+                // Custom drag-to-pan plugin
+                const dragToPanPlugin = {
+                    id: 'dragToPan',
+                    beforeInit: function (chart) {
+                        chart._dragToPan = {
+                            isDragging: false,
+                            lastX: null,
+                            startX: null,
+                            animationFrame: null,
+                            pendingUpdate: false,
+                            mouseDownHandler: null,
+                            mouseMoveHandler: null,
+                            mouseUpHandler: null,
+                            mouseLeaveHandler: null
+                        };
+
+                        // Add direct event listeners to the canvas
+                        const canvas = chart.canvas;
+                        const dragData = chart._dragToPan;
+
+                        dragData.mouseDownHandler = function (e) {
+                            const rect = canvas.getBoundingClientRect();
+                            const x = e.clientX - rect.left;
+                            const y = e.clientY - rect.top;
+                            const chartArea = chart.chartArea;
+
+                            // Check if click is in chart area
+                            if (x >= chartArea.left && x <= chartArea.right &&
+                                y >= chartArea.top && y <= chartArea.bottom) {
+                                dragData.isDragging = true;
+                                dragData.lastX = x;
+                                dragData.startX = x;
+                                canvas.style.cursor = 'grabbing';
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }
+                        };
+
+                        dragData.mouseMoveHandler = function (e) {
+                            const rect = canvas.getBoundingClientRect();
+                            const x = e.clientX - rect.left;
+                            const y = e.clientY - rect.top;
+                            const chartArea = chart.chartArea;
+
+                            const isInChartArea = x >= chartArea.left && x <= chartArea.right &&
+                                y >= chartArea.top && y <= chartArea.bottom;
+
+                            if (dragData.isDragging && dragData.lastX !== null) {
+                                const deltaX = x - dragData.lastX;
+
+                                // Only proceed if there's meaningful movement
+                                if (Math.abs(deltaX) >= 2) {
+                                    const scale = chart.scales.x;
+
+                                    if (scale && scale.min !== undefined && scale.max !== undefined) {
+                                        // Calculate the time range currently displayed
+                                        const timeRange = scale.max - scale.min;
+                                        const pixelRange = scale.right - scale.left;
+
+                                        // Calculate time per pixel
+                                        const timePerPixel = timeRange / pixelRange;
+
+                                        // Calculate time delta (negative because dragging right should move timeline left)
+                                        const timeDelta = -deltaX * timePerPixel;
+
+                                        // Apply the pan
+                                        const newMin = scale.min + timeDelta;
+                                        const newMax = scale.max + timeDelta;
+
+                                        // Update the scale limits directly
+                                        chart.options.scales.x.min = newMin;
+                                        chart.options.scales.x.max = newMax;
+
+                                        // Update the chart with no animation for smooth dragging
+                                        chart.update('none');
+
+                                        // Mark that we need stats update
+                                        dragData.pendingUpdate = true;
+                                    }
+
+                                    dragData.lastX = x;
+                                }
+                                e.preventDefault();
+                                e.stopPropagation();
+                            } else if (isInChartArea && !dragData.isDragging) {
+                                canvas.style.cursor = 'grab';
+                            } else if (!isInChartArea) {
+                                canvas.style.cursor = 'default';
+                            }
+                        };
+
+                        dragData.mouseUpHandler = function (e) {
+                            if (dragData.isDragging) {
+                                dragData.isDragging = false;
+                                dragData.lastX = null;
+                                dragData.startX = null;
+
+                                const rect = canvas.getBoundingClientRect();
+                                const x = e.clientX - rect.left;
+                                const y = e.clientY - rect.top;
+                                const chartArea = chart.chartArea;
+
+                                if (x >= chartArea.left && x <= chartArea.right &&
+                                    y >= chartArea.top && y <= chartArea.bottom) {
+                                    canvas.style.cursor = 'grab';
+                                } else {
+                                    canvas.style.cursor = 'default';
+                                }
+
+                                // Update stats after dragging is complete
+                                if (dragData.pendingUpdate) {
+                                    setTimeout(() => {
+                                        statsManager.update();
+                                        ui.setActiveButton(null);
+                                        dragData.pendingUpdate = false;
+                                    }, 100);
+                                }
+                            }
+                        };
+
+                        dragData.mouseLeaveHandler = function (e) {
+                            if (dragData.isDragging) {
+                                dragData.isDragging = false;
+                                dragData.lastX = null;
+                                dragData.startX = null;
+                                canvas.style.cursor = 'default';
+
+                                // Update stats if we had pending changes
+                                if (dragData.pendingUpdate) {
+                                    setTimeout(() => {
+                                        statsManager.update();
+                                        ui.setActiveButton(null);
+                                        dragData.pendingUpdate = false;
+                                    }, 100);
+                                }
+                            } else {
+                                canvas.style.cursor = 'default';
+                            }
+                        };
+
+                        // Add event listeners
+                        canvas.addEventListener('mousedown', dragData.mouseDownHandler);
+                        canvas.addEventListener('mousemove', dragData.mouseMoveHandler);
+                        canvas.addEventListener('mouseup', dragData.mouseUpHandler);
+                        canvas.addEventListener('mouseleave', dragData.mouseLeaveHandler);
+                    },
+                    destroy: function (chart) {
+                        // Clean up event listeners and animation frames
+                        const canvas = chart.canvas;
+                        const dragData = chart._dragToPan;
+
+                        if (dragData) {
+                            if (dragData.animationFrame) {
+                                cancelAnimationFrame(dragData.animationFrame);
+                            }
+
+                            if (dragData.mouseDownHandler) {
+                                canvas.removeEventListener('mousedown', dragData.mouseDownHandler);
+                            }
+                            if (dragData.mouseMoveHandler) {
+                                canvas.removeEventListener('mousemove', dragData.mouseMoveHandler);
+                            }
+                            if (dragData.mouseUpHandler) {
+                                canvas.removeEventListener('mouseup', dragData.mouseUpHandler);
+                            }
+                            if (dragData.mouseLeaveHandler) {
+                                canvas.removeEventListener('mouseleave', dragData.mouseLeaveHandler);
+                            }
+                        }
+                    }
+                };
+                state.chart = new Chart(ctx, {
+                    type: 'line',
+                    data: { datasets: chartConfig.createDatasets() },
+                    options: chartConfig.getOptions(),
+                    plugins: [crosshairPlugin, dragToPanPlugin]
+                });
+            },
+            updateThreshold() {
+                const { chart } = state;
+                const currentXMin = chart.scales.x.min;
+                const currentXMax = chart.scales.x.max;
+                // Update colors and annotations
+                if (state.showPercentageDiff) {
+                    const diffDataset = chart.data.datasets.find(ds => ds.label === 'Hedera vs CMC Difference');
+                    if (diffDataset) {
+                        const outlierMap = utils.createColorMap(state.parsedData, utils.isOutlier);
+                        diffDataset.borderColor = outlierMap.map(isOut => isOut ? 'rgb(255, 0, 0)' : 'rgb(255, 206, 86)');
+                        diffDataset.backgroundColor = outlierMap.map(isOut => isOut ? 'rgba(255, 0, 0, 1)' : 'rgba(255, 206, 86, 0.9)');
+                        //diffDataset.borderWidth = outlierMap.map(isOut => isOut ? 3 : 2);
+                        //diffDataset.borderRadius = outlierMap.map(isOut => isOut ? 4 : 0);
+                        diffDataset.barPercentage = 0.98;
+                        diffDataset.categoryPercentage = 0.98;
+                    }
+                    const annotations = chart.options.plugins.annotation?.annotations;
+                    if (annotations) {
+                        ['acceptableRange', 'outlierLineTop', 'outlierLineBottom'].forEach(key => {
+                            if (annotations[key]) {
+                                annotations[key].yMin = key === 'outlierLineTop' ? state.acceptableRangeLimit : -state.acceptableRangeLimit;
+                                annotations[key].yMax = key === 'outlierLineBottom' ? -state.acceptableRangeLimit : state.acceptableRangeLimit;
+                            }
+                        });
+                    }
+                }
+                chart.options.scales.x.min = currentXMin;
+                chart.options.scales.x.max = currentXMax;
+                chart.update();
+                statsManager.update();
+            }
+        };
+
+        // Statistics management
+        const statsManager = {
+            update() {
+                const dataToProcess = this.getVisibleData();
+                if (dataToProcess.length === 0) {
+                    this.clearStats();
+                    return;
+                }
+                const percentDiffs = dataToProcess.map(item => Math.abs(item.percentDiff)).sort((a, b) => a - b);
+                const outliers = dataToProcess.filter(item => utils.isOutlier(item.percentDiff));
+                const stats = {
+                    min: percentDiffs[0],
+                    max: percentDiffs[percentDiffs.length - 1],
+                    avg: percentDiffs.reduce((a, b) => a + b, 0) / percentDiffs.length,
+                    median: this.calculateMedian(percentDiffs),
+                    outliersCount: outliers.length,
+                    outliersPercentage: ((outliers.length / dataToProcess.length) * 100).toFixed(1)
+                };
+                this.displayStats(stats);
+            },
+            getVisibleData() {
+                if (!state.chart?.scales?.x) return state.parsedData;
+                const { min, max } = state.chart.scales.x;
+                if (!min || !max) return state.parsedData;
+                return state.parsedData.filter(item => {
+                    const time = item.date.getTime();
+                    return time >= min && time <= max;
+                });
+            },
+            calculateMedian(sortedArray) {
+                const mid = Math.floor(sortedArray.length / 2);
+                return sortedArray.length % 2 === 0
+                    ? (sortedArray[mid - 1] + sortedArray[mid]) / 2
+                    : sortedArray[mid];
+            },
+            displayStats(stats) {
+                const elements = ['minDiff', 'medianDiff', 'avgDiff', 'maxDiff', 'outliersCount'];
+                const values = [stats.min, stats.median, stats.avg, stats.max, `${stats.outliersCount} (${stats.outliersPercentage}%)`];
+                elements.forEach((id, index) => {
+                    const element = document.getElementById(id);
+                    element.textContent = index < 4 ? values[index].toFixed(4) + '%' : values[index];
+                    const shouldWarn = (index < 4 && values[index] > state.acceptableRangeLimit) ||
+                        (index === 4 && stats.outliersCount > 0);
+                    element.classList.toggle('outliers-warning', shouldWarn);
+                });
+            },
+            clearStats() {
+                ['minDiff', 'medianDiff', 'avgDiff', 'maxDiff', 'outliersCount'].forEach(id => {
+                    const element = document.getElementById(id);
+                    element.textContent = '-';
+                    element.classList.remove('outliers-warning');
+                });
+            }
+        };
+
+        // UI management
+        const ui = {
+            setActiveButton(activeId) {
+                ['resetBtn', 'last1dBtn', 'last10dBtn', 'last30dBtn', 'allDataBtn'].forEach(id => {
+                    document.getElementById(id)?.classList.remove('active');
+                });
+                if (activeId) {
+                    document.getElementById(activeId)?.classList.add('active');
+                    // Track the latest active button (only for time range buttons)
+                    if (['last1dBtn', 'last10dBtn', 'last30dBtn', 'allDataBtn'].includes(activeId)) {
+                        state.latestActiveButton = activeId;
+                    }
+                }
+            },
+            filterByTimeRange(hours, buttonId) {
+                // Use the last timestamp from the data as "now"
+                const lastDataPoint = state.parsedData[state.parsedData.length - 1];
+                const now = lastDataPoint ? lastDataPoint.date : new Date();
+                const startTime = new Date(now.getTime() - (hours * 60 * 60 * 1000));
+                state.chart.options.scales.x.min = startTime;
+                state.chart.options.scales.x.max = now;
+                state.chart.update();
+                statsManager.update();
+                this.setActiveButton(buttonId);
+            }
+        };
+
+        // Public API functions
+        function resetZoom() {
+            state.chart.resetZoom();
+            // Restore the previously active time range button
+            ui.setActiveButton(state.latestActiveButton);
+        }
+
+        function showLastXDays(days) {
+            ui.filterByTimeRange(days * 24, `last${days}dBtn`);
+        }
+
+        function showAllData() {
+            state.chart.options.scales.x.min = undefined;
+            state.chart.options.scales.x.max = undefined;
+            state.chart.update();
+            statsManager.update();
+            ui.setActiveButton('allDataBtn');
+        }
+
+        function togglePercentageDiff() {
+            state.showPercentageDiff = !state.showPercentageDiff;
+            state.chart.destroy();
+            chartManager.create();
+            statsManager.update();
+        }
+
+        function updateDataFromTextarea() {
+            const newData = document.getElementById('dataTextarea').value;
+            if (newData.trim()) {
+                state.parsedData = utils.parseData(newData);
+                state.chart.destroy();
+                chartManager.create();
+                statsManager.update();
+            } else {
+                alert('Please paste some data first.');
+            }
+        }
+
+        function toggleTooltip() {
+            state.showTooltip = !state.showTooltip;
+            const button = document.getElementById('toggleTooltipBtn');
+
+            // Update button text
+            button.textContent = state.showTooltip ? 'Hide Tooltip' : 'Show Tooltip';
+
+            // Update chart tooltip configuration
+            state.chart.options.plugins.tooltip.enabled = state.showTooltip;
+            state.chart.update();
+        }
+
+        // Optimized initialization
+        async function init() {
+            console.time('Total initialization');
+
+            // Parse data asynchronously to avoid blocking
+            await new Promise(resolve => {
+                setTimeout(() => {
+                    state.parsedData = utils.parseData(state.csvData);
+                    resolve();
+                }, 0);
+            });
+
+            // Hide loading indicator and show chart
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('priceChart').style.display = 'block';
+
+            document.getElementById('dataTextarea').value = state.csvData;
+
+            // Create chart
+            chartManager.create();
+
+            // Show initial data
+            showLastXDays(10);
+
+            // Update stats
+            statsManager.update();
+
+            // Setup threshold input listener
+            const input = document.getElementById('acceptableRangeInput');
+            if (input && !input._listenerAdded) {
+                input.addEventListener('change', function () {
+                    state.acceptableRangeLimit = parseFloat(this.value) || 3;
+                    if (state.chart) chartManager.updateThreshold();
+                });
+                input._listenerAdded = true;
+            }
+
+            console.timeEnd('Total initialization');
+        }
+
+        // Use DOMContentLoaded for faster startup
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>
