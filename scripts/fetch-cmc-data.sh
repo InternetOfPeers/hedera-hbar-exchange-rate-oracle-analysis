@@ -7,11 +7,11 @@ set -euo pipefail
 SCRIPT_DIR=$(dirname "$0")
 BASE_DIR="$SCRIPT_DIR/.."
 FILENAME="$BASE_DIR/data/cmc-hbar-prices.csv"
-FILENAME_1D=$(mktemp)
+FILENAME_4D=$(mktemp)
 FILENAME_10D=$(mktemp)
 
 # Clean up temp files on exit
-trap "rm -f '$FILENAME_1D' '$FILENAME_10D'" EXIT
+trap "rm -f '$FILENAME_4D' '$FILENAME_10D'" EXIT
 
 # Function to log messages with timestamp
 timestamp() {
@@ -23,14 +23,13 @@ echo -n "$(timestamp) Fetching data... "
 fetch_cmc_data() {
     local filename="$1"
     local interval="$2"
-    local range="$3"
     
     # Create a temporary file for processing
     local temp_file=$(mktemp)
     trap "rm -f '$temp_file'" EXIT
     
     # Fetch and process data in a single pipeline, excluding the last line
-    if curl --silent --fail "https://api.coinmarketcap.com/data-api/v3.3/cryptocurrency/detail/chart?id=4642&interval=$interval&range=$range" | \
+    if curl --silent --fail "https://api.coinmarketcap.com/data-api/v3.3/cryptocurrency/detail/chart?id=4642&interval=$interval" | \
         jq -r ".data.points[] | [ .s, .v[0] ] | @csv" | \
         cut -c 1-22 | \
         sed 's/"//g' > "$temp_file"; then
@@ -46,13 +45,13 @@ fetch_cmc_data() {
         return 0
     else
         rm -f "$temp_file"
-        echo "ERROR: Failed to fetch data for range $range with interval $interval" >&2
+        echo "ERROR: Failed to fetch data with interval $interval" >&2
         return 1
     fi
 }
 
 # Fetch data with error handling
-if fetch_cmc_data "$FILENAME_10D" "15m" "10D" && fetch_cmc_data "$FILENAME_1D" "5m" "1D"; then
+if fetch_cmc_data "$FILENAME_10D" "15m" && fetch_cmc_data "$FILENAME_4D" "5m"; then
     echo "Done."
 else
     echo "ERROR: Failed to fetch some data" >&2
@@ -69,7 +68,7 @@ trap "rm -f '$temp_merged'" EXIT
 {
     [ -f "$FILENAME" ] && tail -n +2 "$FILENAME"  # Skip header from existing file
     [ -f "$FILENAME_10D" ] && tail -n +2 "$FILENAME_10D"  # Skip header
-    [ -f "$FILENAME_1D" ] && tail -n +2 "$FILENAME_1D"   # Skip header
+    [ -f "$FILENAME_4D" ] && tail -n +2 "$FILENAME_4D"   # Skip header
 } | sort -n -t',' -k1,1 | awk -F',' '!seen[$1]++' > "$temp_merged"
 
 # Write header and merged data

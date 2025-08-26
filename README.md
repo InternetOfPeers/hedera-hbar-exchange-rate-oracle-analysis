@@ -1,10 +1,10 @@
 # Hedera HBAR Exchange Rate Oracle Analysis
 
+![snapshot](docs/snapshot.png)
+
 The Hedera HBAR Exchange Rate Oracle Analysis repo contains an interactive chart serving especially as data analysis and support for the discussion around the Hedera Improvement Proposal [HIP-1264: Dollar-denominated values](https://github.com/hiero-ledger/hiero-improvement-proposals/pull/1264).
 
 Or, you can just be here to play with the [live interactive chart](https://hedera.dic6k24yi761o.amplifyapp.com/).
-
-![snapshot](docs/snapshot.png)
 
 ## Update the data
 
