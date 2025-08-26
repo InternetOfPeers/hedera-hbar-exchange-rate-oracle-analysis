@@ -2,15 +2,17 @@
 
 The Hedera HBAR Exchange Rate Oracle Analysis repo contains an interactive chart serving especially as data analysis and support for the discussion around the Hedera Improvement Proposal [HIP-1264: Dollar-denominated values](https://github.com/hiero-ledger/hiero-improvement-proposals/pull/1264).
 
-Or, you can just be here to play with the [live interactive chart](hedera.dic6k24yi761o.amplifyapp.com/).
+Or, you can just be here to play with the [live interactive chart](https://hedera.dic6k24yi761o.amplifyapp.com/).
+
+![snapshot](docs/snapshot.png)
 
 ## Update the data
 
-The interactive chart is a static HMTL page. It contains a static compressed version of the CSV data, but you can paste new data here and click "Update Chart" to refresh the visualization. Data is managed and displayed in UTC format.
+The interactive chart is a static HMTL page. It contains a static compressed version of the CSV data, but you can paste new data and refresh the visualization. Data is managed and displayed in UTC format.
 
-The external references are the chart.js library and related plugins, plus the pako library for decompression. Compression is made offline during the data update process.
+The external references are the [chart.js](https://www.chartjs.org/) library and related plugins, plus the [pako](https://github.com/nodeca/pako) library for decompression. Compression is made via bash scripts during the data update process.
 
-The `./scripts/update-chart.sh` script serves as a central point for updating the `index.html` page with fresh data. In particular the script:
+The `update-chart.sh` script serves as a central point for updating the `index.html` page with fresh data. In particular the script:
 
 1. Fetches the latest HBAR price data from [CoinMarketCap](https://coinmarketcap.com/currencies/hedera/) (1 day with 5 mins interval + 10 days with 15 mins interval) and update the corresponding `./data/cmc-hbar-prices.csv` file.
 2. Fetches the latest HBAR exchange rate using the [Public Hashgraph Mirror Node Exchange Rate APIs](https://mainnet.mirrornode.hedera.com/api/v1/docs/#/network/getNetworkExchangeRate) (rate updated hourly) and update the corresponding `./data/hedera-hbar-prices.csv` file.
@@ -65,7 +67,7 @@ The `data` folder contains data already downloaded and processed. Considering it
 
 ### Features
 
-- Add CoinGecko data for comparison
+- Add [CoinGecko](https://www.coingecko.com/) data for comparison
 - Expand the stats about "Outliers Data Point Count" i.e., how they spread across different "Acceptable Range Threshold" percentages.
 
 ### Tech
