@@ -1,6 +1,7 @@
 # Folders
 node_modules/
-build/
+build/*
+!build/index.html
 
 # Files
 .DS_Store
