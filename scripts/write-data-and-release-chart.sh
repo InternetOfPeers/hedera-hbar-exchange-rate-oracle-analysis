@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 CSV_FILE="$PROJECT_ROOT/build/uncompressed-hbar-prices.csv"
 HTML_FILE="$PROJECT_ROOT/src/index.html"
-DEST_FILE="$PROJECT_ROOT/build/index.html"
+DEST_FILE="$PROJECT_ROOT/release/index.html"
 
 # Check if CSV file exists
 if [[ ! -f "$CSV_FILE" ]]; then
