@@ -3,15 +3,15 @@
 # Exit on any error
 set -euo pipefail
 
-# CMC stats 1M with 1h interval gives different results for the same timestamps vs the other APIS, so I exclude them from the stats
 SCRIPT_DIR=$(dirname "$0")
 BASE_DIR="$SCRIPT_DIR/.."
 FILENAME="$BASE_DIR/data/cmc-hbar-prices.csv"
 FILENAME_4D=$(mktemp)
 FILENAME_10D=$(mktemp)
+FILENAME_1M=$(mktemp)
 
 # Clean up temp files on exit
-trap "rm -f '$FILENAME_4D' '$FILENAME_10D'" EXIT
+trap "rm -f '$FILENAME_4D' '$FILENAME_10D' '$FILENAME_1M'" EXIT
 
 # Function to log messages with timestamp
 timestamp() {
@@ -51,7 +51,7 @@ fetch_cmc_data() {
 }
 
 # Fetch data with error handling
-if fetch_cmc_data "$FILENAME_10D" "15m" && fetch_cmc_data "$FILENAME_4D" "5m"; then
+if fetch_cmc_data "$FILENAME_4D" "5m" && fetch_cmc_data "$FILENAME_10D" "15m" && fetch_cmc_data "$FILENAME_1M" "1h"; then
     echo "Done."
 else
     echo "ERROR: Failed to fetch some data" >&2
@@ -67,8 +67,9 @@ trap "rm -f '$temp_merged'" EXIT
 # Combine all files, remove duplicates, and sort in one operation
 {
     [ -f "$FILENAME" ] && tail -n +2 "$FILENAME"  # Skip header from existing file
-    [ -f "$FILENAME_10D" ] && tail -n +2 "$FILENAME_10D"  # Skip header
     [ -f "$FILENAME_4D" ] && tail -n +2 "$FILENAME_4D"   # Skip header
+    [ -f "$FILENAME_10D" ] && tail -n +2 "$FILENAME_10D"  # Skip header
+    [ -f "$FILENAME_1M" ] && tail -n +2 "$FILENAME_1M"   # Skip header
 } | sort -n -t',' -k1,1 | awk -F',' '!seen[$1]++' > "$temp_merged"
 
 # Write header and merged data
