@@ -8,7 +8,7 @@ Or, you can just be here to play with the [live interactive chart](https://inter
 
 ## Update the data
 
-The interactive chart is a static HMTL page. It contains a static compressed version of the CSV data, but you can paste new data and refresh the visualization. Data is managed and displayed in UTC format.
+The interactive chart is a static HTML page. It contains a static compressed version of the CSV data, but you can paste new data and refresh the visualization. Data is managed and displayed in UTC format.
 
 The external references are the [chart.js](https://www.chartjs.org/) library and related plugins, plus the [pako](https://github.com/nodeca/pako) library for decompression. Compression is made via bash scripts during the data update process.
 
@@ -67,7 +67,6 @@ The `data` folder contains data already downloaded and processed. Considering it
 
 ### Features
 
-- Add [CoinGecko](https://www.coingecko.com/) data for comparison
 - Expand the stats about "Outliers Data Point Count" i.e., how they spread across different "Acceptable Range Threshold" percentages.
 
 ### Tech
