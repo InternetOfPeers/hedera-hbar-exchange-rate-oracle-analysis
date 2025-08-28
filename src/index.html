@@ -33,13 +33,15 @@
         <div class="controls">
             <button onclick="resetZoom()">Reset Zoom</button>
             <button id="last1dBtn" onclick="showLastXDays(1)">Last 1 Day</button>
-            <button id="last10dBtn" onclick="showLastXDays(10)" class="active">Last 10 Days</button>
+            <button id="last3dBtn" onclick="showLastXDays(3)">Last 3 Days</button>
+            <button id="last7dBtn" onclick="showLastXDays(7)" class="active">Last 7 Days</button>
+            <button id="last14dBtn" onclick="showLastXDays(14)">Last 14 Days</button>
             <button id="last30dBtn" onclick="showLastXDays(30)">Last 30 Days</button>
             <button id="allDataBtn" onclick="showAllData()">Show All Data</button>
-            <button onclick="togglePercentageDiff()">Toggle % Difference</button>
+            <!--<button onclick="togglePercentageDiff()">Toggle % Difference</button>-->
             <button id="toggleTooltipBtn" onclick="toggleTooltip()">Hide Tooltip</button>
             <div class="threshold-control">
-                <label for="acceptableRangeInput">Acceptable Range Threshold:</label>
+                <label for="acceptableRangeInput">Threshold:</label>
                 <input type="number" id="acceptableRangeInput" value="3" min="0" step="0.1">%
             </div>
         </div>
@@ -140,7 +142,15 @@
 
     <script>
         // Application state
-        const state = { compressedCsvData: "H4sICFgyrmgAA3VuY29tcHJlc3NlZC1oYmFyLXByaWNlcy5jc3YAPZA7DsJADER7zhIhf8dOiUgkGhpuQMENuL9YEnu7kZ7ns7u9v5/l/rwvj33bX7cLhzNYjGihK7vDgUOFuqkWBzWPTD8UaHio+Irm4qqHMvzlyUWluUV4NZFOjiw+clyqKWa+0txHkCwVK1Dc5j5nLb95TH/0PhNda7/kzDfufaNJ+LzM0VX5Zr1Pkw2Vn5g8e5/aavX+cdjcpfcJk5x+lfHT+AHR9RRFjwEAAA==", chart: null, parsedData: [], showPercentageDiff: true, acceptableRangeLimit: 3, latestActiveButton: 'last10dBtn', showTooltip: true };
+        const state = {
+            compressedCsvData: "H4sICFgyrmgAA3VuY29tcHJlc3NlZC1oYmFyLXByaWNlcy5jc3YAPZA7DsJADER7zhIhf8dOiUgkGhpuQMENuL9YEnu7kZ7ns7u9v5/l/rwvj33bX7cLhzNYjGihK7vDgUOFuqkWBzWPTD8UaHio+Irm4qqHMvzlyUWluUV4NZFOjiw+clyqKWa+0txHkCwVK1Dc5j5nLb95TH/0PhNda7/kzDfufaNJ+LzM0VX5Zr1Pkw2Vn5g8e5/aavX+cdjcpfcJk5x+lfHT+AHR9RRFjwEAAA==",
+            chart: null,
+            parsedData: [],
+            showPercentageDiff: true,
+            acceptableRangeLimit: 3,
+            latestActiveButton: 'last7dBtn',
+            showTooltip: true
+        };
 
         let decompressedCsvData = null; function getDecompressedCsvData() { if (decompressedCsvData) return decompressedCsvData; try { const b = atob(state.compressedCsvData); const bytes = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) bytes[i] = b.charCodeAt(i); decompressedCsvData = pako.inflate(bytes, { to: 'string' }); } catch (_) { decompressedCsvData = ''; } return decompressedCsvData; }
 
@@ -883,13 +893,13 @@
         // UI management
         const ui = {
             setActiveButton(activeId) {
-                ['resetBtn', 'last1dBtn', 'last10dBtn', 'last30dBtn', 'allDataBtn'].forEach(id => {
+                ['resetBtn', 'last1dBtn', 'last3dBtn', 'last7dBtn', 'last14dBtn', 'last30dBtn', 'allDataBtn'].forEach(id => {
                     document.getElementById(id)?.classList.remove('active');
                 });
                 if (activeId) {
                     document.getElementById(activeId)?.classList.add('active');
                     // Track the latest active button (only for time range buttons)
-                    if (['last1dBtn', 'last10dBtn', 'last30dBtn', 'allDataBtn'].includes(activeId)) {
+                    if (['last1dBtn', 'last3dBtn', 'last7dBtn', 'last14dBtn', 'last30dBtn', 'allDataBtn'].includes(activeId)) {
                         state.latestActiveButton = activeId;
                     }
                 }
@@ -985,7 +995,7 @@
             chartManager.create();
 
             // Show initial data
-            showLastXDays(10);
+            showLastXDays(7);
 
             // Update stats
             statsManager.update();
