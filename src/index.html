@@ -108,24 +108,207 @@
             border-color: #adb5bd;
         }
 
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        .analytics-container {
+            display: flex;
             gap: 15px;
             margin: 20px 0;
+            width: 100%;
         }
 
-        .stat-box {
-            padding: 15px;
-            background-color: #e9ecef;
-            border-radius: 5px;
+        .threshold-panel,
+        .stats-panel {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            min-width: 0;
+        }
+
+        .threshold-panel {
+            overflow-x: auto;
+        }
+
+        .panel-title {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #495057;
             text-align: center;
         }
 
+        .stats-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            height: 100%;
+        }
+
+        .time-stat-row {
+            flex: 0 0 auto;
+        }
+
+        /* Two-column layout for time stats */
+        .time-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        @media (max-width: 500px) {
+            .time-stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .other-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .stat-box {
+            padding: 10px 8px;
+            background-color: white;
+            border-radius: 4px;
+            text-align: center;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 70px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+        }
+
+        .time-stat-row .stat-box {
+            min-height: 80px;
+        }
+
+        .stat-box>div:first-child {
+            font-size: 16px;
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 4px;
+            line-height: 1.1;
+            flex-shrink: 0;
+        }
+
+        .threshold-analysis {
+            margin: 0;
+            background-color: transparent;
+            padding: 0;
+            border: none;
+            border-radius: 0;
+        }
+
+        .threshold-grid {
+            display: grid;
+            /* Let first column size to its content instead of a fixed width */
+            grid-template-columns: max-content 1fr 1fr 1fr;
+            /* Added Percentage Inside column */
+            gap: 8px;
+            align-items: center;
+            grid-auto-rows: min-content;
+            width: 100%;
+        }
+
+        /* Single grid will now host both headers and data rows */
+
+        .threshold-header {
+            font-weight: bold;
+            color: #495057;
+            text-align: center;
+            padding: 6px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+            /* Ensure text stays inside cell */
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .threshold-cell {
+            text-align: center;
+            padding: 5px 8px;
+            background-color: white;
+            border-radius: 3px;
+            border: 1px solid #dee2e6;
+            font-size: 16px;
+            line-height: 1.3;
+            box-sizing: border-box;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .threshold-cell.current-threshold {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+            font-weight: bold;
+        }
+
+        /* Disable red high-outlier styling (kept class name in case logic still adds it) */
+        .threshold-cell.high-outlier {
+            background-color: white;
+            border-color: #dee2e6;
+            color: inherit;
+        }
+
+        /* Entire row green when 100% inside (0% outside) */
+        .threshold-cell.all-inside {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        @media (max-width: 1200px) {
+            .analytics-container {
+                flex-direction: column;
+            }
+
+            .other-stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                grid-template-rows: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .other-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: 1fr 1fr;
+            }
+
+            .analytics-container {
+                gap: 15px;
+            }
+
+            .stats-panel,
+            .threshold-panel {
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .other-stats-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(4, 1fr);
+            }
+        }
+
         .stat-value {
-            font-size: 1.5em;
+            font-size: 1.6em;
             font-weight: bold;
             color: #007bff;
+            line-height: 1.1;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .stat-value.outliers-warning {
@@ -134,25 +317,208 @@
 
         .data-section {
             margin-top: 30px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px 20px 24px;
+        }
+
+        .data-section h2 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .data-section small.section-note {
+            display: inline-block;
+            margin-left: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 12px;
+            letter-spacing: .5px;
+            color: #495057;
+            text-transform: uppercase;
+        }
+
+        .data-management-grid {
+            /* align with analytics two-panel layout */
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            /* match .analytics-container gap */
+            align-items: start;
+        }
+
+        .data-instructions {
+            font-size: 14px;
+            line-height: 1.45;
+            color: #444;
+        }
+
+        .data-instructions p {
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+
+        .data-instructions pre {
+            margin: 0 0 10px;
+            background: #dbdbdb;
+            color: #212529;
+            padding: 12px 14px;
+            font-size: 12px;
+            border-radius: 6px;
+            overflow: auto;
+            line-height: 1.3;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+
+        .data-example {
+            margin-top: 4px;
+        }
+
+        .data-example .example-title {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+            color: #6c757d;
+            margin: 0 0 6px;
+        }
+
+        .data-instructions code {
+            font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .data-input-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        @media (max-width: 900px) {
+
+            /* collapse below similar breakpoint */
+            .data-management-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         #dataTextarea {
             width: 100%;
-            height: 200px;
-            font-family: monospace;
+            height: 240px;
+            font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
             font-size: 12px;
-            border: 1px solid #ddd;
+            border: none;
+            /* remove inner border to avoid double border effect */
             border-radius: 4px;
-            padding: 10px;
+            padding: 10px 12px;
+            resize: vertical;
+            background: #fdfdfe;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+            transition: box-shadow .18s ease, background-color .18s ease;
+            box-sizing: border-box;
+            line-height: 1.35;
+        }
+
+        #dataTextarea:focus {
+            outline: none;
+            background: #ffffff;
+            box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.35), inset 0 1px 2px rgba(0, 0, 0, 0.08);
+        }
+
+        .data-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .data-actions button.update-button {
+            flex: 0 0 auto;
+        }
+
+        .data-hint {
+            font-size: 14px;
+            color: #6c757d;
+            line-height: 1.3;
+        }
+
+        /* Removed unused details/summary styles */
+
+        .textarea-wrapper {
+            background: #ffffff;
+            padding: 14px 16px 14px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .textarea-wrapper label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #495057;
+            margin: 0 0 6px;
+            letter-spacing: .5px;
+            text-transform: uppercase;
         }
 
         .update-button {
-            background-color: #28a745 !important;
-            margin-top: 10px;
+            --btn-bg-start: #0d6efd;
+            --btn-bg-end: #0b5ed7;
+            background: linear-gradient(135deg, var(--btn-bg-start), var(--btn-bg-end));
+            border: 1px solid #0a58ca;
+            color: #fff;
+            font-weight: 600;
+            letter-spacing: .4px;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(13, 110, 253, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+            transition: background .2s ease, transform .15s ease, box-shadow .2s ease;
+        }
+
+        .update-button svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
         }
 
         .update-button:hover {
-            background-color: #218838 !important;
+            background: linear-gradient(135deg, #0c62e6, #0a53be);
+            box-shadow: 0 3px 6px rgba(13, 110, 253, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+        }
+
+        .update-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(13, 110, 253, 0.25) inset;
+        }
+
+        .update-button.unsaved::after {
+            content: '●';
+            color: #ffc107;
+            font-size: 10px;
+            line-height: 1;
+            margin-left: 2px;
+        }
+
+        .update-button.saved::after {
+            content: '✓';
+            color: #28a745;
+            font-size: 12px;
+            line-height: 1;
+            margin-left: 2px;
         }
 
         h1 {
@@ -262,88 +628,100 @@
             <canvas id="priceChart" style="display: none;"></canvas>
         </div>
 
-        <div class="stats">
-            <div class="stat-box">
-                <div>Max Difference</div>
-                <div class="stat-value" id="maxDiff">-</div>
+        <div class="analytics-container">
+            <div style="flex: 1;">
+                <div class="threshold-panel">
+                    <div class="threshold-analysis">
+                        <div id="thresholdAnalysisGrid" class="threshold-grid"></div>
+                    </div>
+                </div>
             </div>
-            <div class="stat-box">
-                <div>Min Difference</div>
-                <div class="stat-value" id="minDiff">-</div>
-            </div>
-            <div class="stat-box">
-                <div>Median Difference</div>
-                <div class="stat-value" id="medianDiff">-</div>
-            </div>
-            <div class="stat-box">
-                <div>Average Difference</div>
-                <div class="stat-value" id="avgDiff">-</div>
-            </div>
-            <div class="stat-box">
-                <div>Outliers Data Point Count</div>
-                <div class="stat-value" id="outliersCount">-</div>
+
+            <div style="flex: 1;">
+                <div class="stats-panel">
+                    <div class="stats-layout">
+                        <div class="time-stat-row time-stats-grid">
+                            <div class="stat-box time-stat">
+                                <div>Current Time Window</div>
+                                <div class="stat-value" id="timeWindowDisplay">-</div>
+                            </div>
+                            <div class="stat-box time-stat">
+                                <div>Outside Threshold (<span id="currentThresholdDisplay">3%</span>)</div>
+                                <div class="stat-value" id="timeOutsideThreshold">-</div>
+                            </div>
+                        </div>
+                        <div class="other-stats-grid">
+                            <div class="stat-box">
+                                <div>Minimum Difference</div>
+                                <div class="stat-value" id="minDiff">-</div>
+                            </div>
+                            <div class="stat-box">
+                                <div>Maximum Difference</div>
+                                <div class="stat-value" id="maxDiff">-</div>
+                            </div>
+                            <div class="stat-box">
+                                <div>Median</div>
+                                <div class="stat-value" id="medianDiff">-</div>
+                            </div>
+                            <div class="stat-box">
+                                <div>Average</div>
+                                <div class="stat-value" id="avgDiff">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-
         <div class="data-section">
-            <h2>Data Management</h2>
-            <p>
-                The HTML page contains a static compressed version of the CSV data, but you can
-                paste new data here and click "Update Chart" to refresh the visualization.<br />
-                The first line is skipped so it can contain the headers or any comment.<br />
-                The chart supports both timestamp and human readable date formats, e.g.:<br /><br />
-                <code>
-                Date,CMC,HEDERA<br/>
-                2025/07/04T07:00,0.1561745,0.15735433<br/>
-                2025/07/04T08:00,0.15483,0.15604<br/>
-                ...<br/>
-                1756170900,0.2334577,0.23047166<br/>
-                1756171680,0.234483,0.23047166<br/>
-                </code>
-            </p>
-            <textarea id="dataTextarea" placeholder="Paste your data here in the format: Date\tCMC\tHedera"
-                style="width: 50%;"></textarea>
-            <button class="update-button" onclick="updateDataFromTextarea()">Update Chart</button>
+            <h2>Data Management <small class="section-note">Advanced</small></h2>
+            <div class="data-management-grid">
+                <div class="data-instructions">
+                    <p>
+                        A compressed snapshot of the CSV is embedded in this page. Paste newer or custom data to
+                        re-render the chart locally (no upload performed). The first line is ignored so you can keep
+                        headers or comments there.
+                    </p>
+                    <div class="data-example">
+                        <div class="example-title">Example Format</div>
+                        <pre><code>Date,CMC,HEDERA
+2025/07/04T07:00,0.1561745,0.15735433
+2025/07/04T08:00,0.15483,0.15604
+...
+1756170900,0.2334577,0.23047166
+1756171680,0.234483,0.23047166</code></pre>
+                        <div class="data-hint">Supports ISO date strings (YYYY/MM/DDTHH:mm) or Unix timestamps (seconds
+                            / ms).</div>
+                    </div>
+                </div>
+                <div class="data-input-panel">
+                    <div class="textarea-wrapper">
+                        <label for="dataTextarea">Custom Data</label>
+                        <textarea id="dataTextarea" placeholder="Paste your data here (Date,CMC,HEDERA)"></textarea>
+                        <br /><br />
+                        <div class="data-actions">
+                            <button id="updateChartBtn" class="update-button saved" onclick="updateDataFromTextarea()"
+                                title="Re-parse and refresh the chart">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path
+                                        d="M12 5V2L8 6l4 4V7c3.309 0 6 2.691 6 6a6 6 0 0 1-6 6 5.99 5.99 0 0 1-5.65-4H4.062A8.003 8.003 0 0 0 12 22c4.411 0 8-3.589 8-8s-3.589-9-8-9z" />
+                                </svg>
+                                Update Chart
+                            </button>
+                        </div>
+                        <div class="data-hint"><br />Changes not applied until you press Update Chart. Reload page to
+                            restore embedded dataset.<br /> Parsing runs fully in your browser. Reload the page to
+                            restore the original embedded dataset.</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         // Application state
-        const state = {
-            // Compressed CSV data (will be decompressed on load)
-            compressedCsvData: "H4sICFgyrmgAA3VuY29tcHJlc3NlZC1oYmFyLXByaWNlcy5jc3YAPZA7DsJADER7zhIhf8dOiUgkGhpuQMENuL9YEnu7kZ7ns7u9v5/l/rwvj33bX7cLhzNYjGihK7vDgUOFuqkWBzWPTD8UaHio+Irm4qqHMvzlyUWluUV4NZFOjiw+clyqKWa+0txHkCwVK1Dc5j5nLb95TH/0PhNda7/kzDfufaNJ+LzM0VX5Zr1Pkw2Vn5g8e5/aavX+cdjcpfcJk5x+lfHT+AHR9RRFjwEAAA==",
-            csvData: null, // Will be decompressed from compressedCsvData
-            chart: null,
-            parsedData: [],
-            showPercentageDiff: true,
-            acceptableRangeLimit: 3,
-            latestActiveButton: 'last10dBtn'
-        };
+        const state = { compressedCsvData: "H4sICFgyrmgAA3VuY29tcHJlc3NlZC1oYmFyLXByaWNlcy5jc3YAPZA7DsJADER7zhIhf8dOiUgkGhpuQMENuL9YEnu7kZ7ns7u9v5/l/rwvj33bX7cLhzNYjGihK7vDgUOFuqkWBzWPTD8UaHio+Irm4qqHMvzlyUWluUV4NZFOjiw+clyqKWa+0txHkCwVK1Dc5j5nLb95TH/0PhNda7/kzDfufaNJ+LzM0VX5Zr1Pkw2Vn5g8e5/aavX+cdjcpfcJk5x+lfHT+AHR9RRFjwEAAA==", chart: null, parsedData: [], showPercentageDiff: true, acceptableRangeLimit: 3, latestActiveButton: 'last10dBtn', showTooltip: true };
 
-        // Cache for decompressed data
-        let decompressedCsvData = null;
-
-        // Optimized decompress function for gzip data
-        function getDecompressedCsvData() {
-            if (!decompressedCsvData) {
-                console.time('Data decompression');
-                try {
-                    // Decode base64 to binary data
-                    const binaryString = atob(state.compressedCsvData);
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    // Decompress with pako
-                    decompressedCsvData = pako.inflate(bytes, { to: 'string' });
-                } catch (error) {
-                    console.error('Decompression failed:', error);
-                    decompressedCsvData = '';
-                }
-                console.timeEnd('Data decompression');
-            }
-            return decompressedCsvData;
-        }
+        let decompressedCsvData = null; function getDecompressedCsvData() { if (decompressedCsvData) return decompressedCsvData; try { const b = atob(state.compressedCsvData); const bytes = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) bytes[i] = b.charCodeAt(i); decompressedCsvData = pako.inflate(bytes, { to: 'string' }); } catch (_) { decompressedCsvData = ''; } return decompressedCsvData; }
 
         // Update state to use decompressed data
         Object.defineProperty(state, 'csvData', {
@@ -352,111 +730,20 @@
             }
         });
 
-        // Add other state properties
-        state.chart = null;
-        state.parsedData = [];
-        state.showPercentageDiff = true;
-        state.acceptableRangeLimit = 3;
-        state.latestActiveButton = 'last10dBtn';
-        state.showTooltip = true;
+        // Removed duplicate state property reassignments
 
         // Utility functions
         const utils = {
-            parseData(dataString) {
-                console.time('Data parsing');
-                const lines = dataString.trim().split('\n');
-                const result = [];
-
-                // Skip header
-                for (let i = 1; i < lines.length; i++) {
-                    const parts = lines[i].split(/[\t,]/);
-                    if (parts.length >= 3) {
-                        const dateStr = parts[0].trim();
-                        const cmcStr = parts[1].trim();
-                        const hederaStr = parts[2].trim();
-
-                        // Parse date - support both regular dates and Unix timestamps
-                        let date;
-                        if (/^\d+$/.test(dateStr)) {
-                            // Unix timestamp (all digits)
-                            const timestamp = parseInt(dateStr);
-                            // Handle both seconds and milliseconds timestamps
-                            date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
-                        } else {
-                            // Regular date string
-                            date = new Date(dateStr.replace('T', ' '));
-                        }
-
-                        const cmc = parseFloat(cmcStr);
-                        const hedera = parseFloat(hederaStr);
-
-                        if (!isNaN(date.getTime()) && !isNaN(cmc) && !isNaN(hedera)) {
-                            result.push({
-                                date,
-                                cmc,
-                                hedera,
-                                percentDiff: ((hedera - cmc) / cmc) * 100
-                            });
-                        }
-                    }
-                }
-
-                // Sort once at the end
-                result.sort((a, b) => a.date - b.date);
-                console.timeEnd('Data parsing');
-                return result;
-            },
-            truncateToDecimals(value, decimals = 4) {
-                const multiplier = Math.pow(10, decimals);
-                return Math.trunc(value * multiplier) / multiplier;
-            },
-            isOutlier(diff) {
-                return Math.abs(diff) > state.acceptableRangeLimit;
-            },
-            createColorMap(data, isOutlier) {
-                return data.map(item => isOutlier(item.percentDiff));
-            }
+            parseData(s) { const lines = s.trim().split(/\n+/); const out = []; for (let i = 1; i < lines.length; i++) { const line = lines[i]; if (!line) continue; const parts = line.split(/[\t,]/); if (parts.length < 3) continue; const ds = parts[0].trim(); const cmc = parseFloat(parts[1]); const hed = parseFloat(parts[2]); if (isNaN(cmc) || isNaN(hed)) continue; let date; if (/^\d+$/.test(ds)) { const ts = parseInt(ds, 10); date = new Date(ts < 10000000000 ? ts * 1000 : ts); } else { date = new Date(ds.replace('T', ' ')); } if (!isNaN(date.getTime())) out.push({ date, cmc, hedera: hed, percentDiff: ((hed - cmc) / cmc) * 100 }); } out.sort((a, b) => a.date - b.date); return out; },
+            truncateToDecimals(v, d = 4) { const m = Math.pow(10, d); return Math.trunc(v * m) / m; },
+            isOutlier(diff, threshold = state.acceptableRangeLimit) { return Math.abs(diff) > threshold; },
+            isOutlierWithThreshold(diff, t) { return Math.abs(diff) > t; },
+            createColorMap(d, fn) { return d.map(it => fn(it.percentDiff)); }
         };
 
         // Chart configuration
         const chartConfig = {
-            createDatasets() {
-                const datasets = [
-                    {
-                        label: 'Hedera Price',
-                        data: state.parsedData.map(item => ({ x: item.date, y: item.hedera })),
-                        borderColor: '#8A2BE2',
-                        backgroundColor: 'rgba(138, 43, 226, 0.2)',
-                        fill: false,
-                        yAxisID: 'y'
-                    },
-                    {
-                        label: 'CMC Price',
-                        data: state.parsedData.map(item => ({ x: item.date, y: item.cmc })),
-                        borderColor: '#00BFFF',
-                        backgroundColor: 'rgba(0, 191, 255, 0.2)',
-                        fill: false,
-                        yAxisID: 'y'
-                    }
-                ];
-
-                if (state.showPercentageDiff) {
-                    const outlierMap = utils.createColorMap(state.parsedData, utils.isOutlier);
-                    datasets.push({
-                        type: 'bar',
-                        label: 'Hedera vs CMC Difference',
-                        data: state.parsedData.map(item => ({ x: item.date, y: item.percentDiff })),
-                        borderColor: outlierMap.map(isOut => isOut ? 'rgb(255, 0, 0)' : 'rgb(255, 206, 86)'),
-                        backgroundColor: outlierMap.map(isOut => isOut ? 'rgba(255, 0, 0, 1)' : 'rgba(255, 206, 86, 0.7)'),
-                        //borderWidth: outlierMap.map(isOut => isOut ? 3 : 2),
-                        //borderRadius: outlierMap.map(isOut => isOut ? 4 : 0),
-                        yAxisID: 'y1',
-                        barPercentage: 0.98,
-                        categoryPercentage: 0.98,
-                    });
-                }
-                return datasets;
-            },
+            createDatasets() { const hederaPts = [], cmcPts = [], diffPts = []; for (let i = 0; i < state.parsedData.length; i++) { const it = state.parsedData[i]; hederaPts.push({ x: it.date, y: it.hedera }); cmcPts.push({ x: it.date, y: it.cmc }); if (state.showPercentageDiff) diffPts.push({ x: it.date, y: it.percentDiff }); } const ds = [{ label: 'Hedera Price', data: hederaPts, borderColor: '#8A2BE2', backgroundColor: 'rgba(138,43,226,.2)', fill: false, yAxisID: 'y' }, { label: 'CMC Price', data: cmcPts, borderColor: '#00BFFF', backgroundColor: 'rgba(0,191,255,.2)', fill: false, yAxisID: 'y' }]; if (state.showPercentageDiff) { const outlierMap = utils.createColorMap(state.parsedData, utils.isOutlier); ds.push({ type: 'bar', label: 'Hedera vs CMC Difference', data: diffPts, borderColor: outlierMap.map(o => o ? 'rgb(255, 0, 0)' : 'rgb(255, 206, 86)'), backgroundColor: outlierMap.map(o => o ? 'rgba(255,0,0,1)' : 'rgba(255,206,86,.7)'), yAxisID: 'y1', barPercentage: 0.98, categoryPercentage: 0.98 }); } return ds; },
 
             createAnnotations() {
                 if (!state.showPercentageDiff) return { display: false, annotations: {} };
@@ -945,8 +1232,6 @@
                         const outlierMap = utils.createColorMap(state.parsedData, utils.isOutlier);
                         diffDataset.borderColor = outlierMap.map(isOut => isOut ? 'rgb(255, 0, 0)' : 'rgb(255, 206, 86)');
                         diffDataset.backgroundColor = outlierMap.map(isOut => isOut ? 'rgba(255, 0, 0, 1)' : 'rgba(255, 206, 86, 0.9)');
-                        //diffDataset.borderWidth = outlierMap.map(isOut => isOut ? 3 : 2);
-                        //diffDataset.borderRadius = outlierMap.map(isOut => isOut ? 4 : 0);
                         diffDataset.barPercentage = 0.98;
                         diffDataset.categoryPercentage = 0.98;
                     }
@@ -968,6 +1253,7 @@
         };
 
         // Statistics management
+        const thresholdsList = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 9, 10];
         const statsManager = {
             update() {
                 const dataToProcess = this.getVisibleData();
@@ -975,17 +1261,107 @@
                     this.clearStats();
                     return;
                 }
-                const percentDiffs = dataToProcess.map(item => Math.abs(item.percentDiff)).sort((a, b) => a - b);
-                const outliers = dataToProcess.filter(item => utils.isOutlier(item.percentDiff));
-                const stats = {
-                    min: percentDiffs[0],
-                    max: percentDiffs[percentDiffs.length - 1],
-                    avg: percentDiffs.reduce((a, b) => a + b, 0) / percentDiffs.length,
-                    median: this.calculateMedian(percentDiffs),
-                    outliersCount: outliers.length,
-                    outliersPercentage: ((outliers.length / dataToProcess.length) * 100).toFixed(1)
-                };
+                const percentDiffs = []; let sum = 0, min = Infinity, max = -Infinity; for (let i = 0; i < dataToProcess.length; i++) { const v = Math.abs(dataToProcess[i].percentDiff); percentDiffs.push(v); sum += v; if (v < min) min = v; if (v > max) max = v; } percentDiffs.sort((a, b) => a - b); const avg = sum / percentDiffs.length; const median = this.calculateMedian(percentDiffs); const timeStats = this.calculateTimeBasedStats(dataToProcess, state.acceptableRangeLimit); const stats = { min, max, avg, median, timeOutside: timeStats.minutesOutside, timePercentage: timeStats.percentage, totalTimeWindow: timeStats.totalMinutes };
                 this.displayStats(stats);
+                this.updateThresholdAnalysis(dataToProcess);
+            },
+
+            calculateTimeBasedStats(data, threshold) {
+                if (data.length === 0) return { minutesOutside: 0, percentage: 0, totalMinutes: 0 };
+
+                // Calculate total time window
+                const firstDate = data[0].date;
+                const lastDate = data[data.length - 1].date;
+                const baseMinutes = (lastDate.getTime() - firstDate.getTime()) / (1000 * 60);
+                const avgInterval = data.length > 1 ? baseMinutes / (data.length - 1) : 0;
+                // Extend the window by one estimated interval to account for span of last point
+                const totalMinutes = baseMinutes + avgInterval;
+
+                // Calculate time outside threshold
+                let minutesOutside = 0;
+                for (let i = 0; i < data.length - 1; i++) {
+                    const current = data[i];
+                    const next = data[i + 1];
+
+                    if (utils.isOutlierWithThreshold(current.percentDiff, threshold)) {
+                        const timeDiff = (next.date.getTime() - current.date.getTime()) / (1000 * 60);
+                        minutesOutside += timeDiff;
+                    }
+                }
+
+                // Handle the last data point (assume it spans one average interval)
+                if (data.length > 1 && utils.isOutlierWithThreshold(data[data.length - 1].percentDiff, threshold)) {
+                    minutesOutside += avgInterval;
+                }
+
+                const percentage = totalMinutes > 0 ? (minutesOutside / totalMinutes) * 100 : 0;
+
+                return {
+                    minutesOutside: Math.max(0, minutesOutside),
+                    percentage: Math.max(0, percentage),
+                    totalMinutes: Math.max(0, totalMinutes)
+                };
+            },
+
+            updateThresholdAnalysis(data) {
+                const grid = document.getElementById('thresholdAnalysisGrid');
+                // Clear and add header row (kept inside same grid for alignment)
+                grid.innerHTML = '';
+                const headers = ['Threshold', 'Time Outside', 'Percentage Outside', 'Percentage Inside'];
+                headers.forEach(text => {
+                    const h = document.createElement('div');
+                    h.className = 'threshold-header';
+                    h.textContent = text;
+                    grid.appendChild(h);
+                });
+                thresholdsList.forEach(threshold => {
+                    const stats = this.calculateTimeBasedStats(data, threshold);
+                    const isCurrentThreshold = Math.abs(threshold - state.acceptableRangeLimit) < 0.01;
+                    const isAllInside = stats.percentage <= 0.0000001; // Treat extremely small as 0
+                    const buildClass = () => {
+                        let cls = 'threshold-cell';
+                        if (isCurrentThreshold) cls += ' current-threshold';
+                        if (isAllInside) cls += ' all-inside';
+                        return cls;
+                    };
+
+                    // Threshold cell
+                    const thresholdCell = document.createElement('div');
+                    thresholdCell.className = buildClass();
+                    thresholdCell.textContent = `${threshold}%`;
+
+                    // Time outside cell
+                    const timeCell = document.createElement('div');
+                    timeCell.className = buildClass();
+
+                    if (stats.minutesOutside < 60) {
+                        timeCell.textContent = `${Math.round(stats.minutesOutside)} mins`;
+                    } else if (stats.minutesOutside < 1440) {
+                        const hours = Math.floor(stats.minutesOutside / 60);
+                        const minutes = Math.round(stats.minutesOutside % 60);
+                        timeCell.textContent = `${hours}h ${minutes}m`;
+                    } else {
+                        const days = Math.floor(stats.minutesOutside / 1440);
+                        const hours = Math.floor((stats.minutesOutside % 1440) / 60);
+                        timeCell.textContent = `${days}d ${hours}h`;
+                    }
+
+                    // Percentage Outside cell
+                    const percentCell = document.createElement('div');
+                    percentCell.className = buildClass();
+                    percentCell.textContent = `${stats.percentage.toFixed(2)}%`;
+
+                    // Percentage Inside cell (clamped to >= 0 and <= 100)
+                    const insidePct = Math.min(100, Math.max(0, 100 - stats.percentage));
+                    const percentInsideCell = document.createElement('div');
+                    percentInsideCell.className = buildClass();
+                    percentInsideCell.textContent = `${insidePct.toFixed(2)}%`;
+
+                    grid.appendChild(thresholdCell);
+                    grid.appendChild(timeCell);
+                    grid.appendChild(percentCell);
+                    grid.appendChild(percentInsideCell);
+                });
             },
             getVisibleData() {
                 if (!state.chart?.scales?.x) return state.parsedData;
@@ -1003,22 +1379,83 @@
                     : sortedArray[mid];
             },
             displayStats(stats) {
-                const elements = ['minDiff', 'medianDiff', 'avgDiff', 'maxDiff', 'outliersCount'];
-                const values = [stats.min, stats.median, stats.avg, stats.max, `${stats.outliersCount} (${stats.outliersPercentage}%)`];
+                const elements = ['minDiff', 'medianDiff', 'avgDiff', 'maxDiff'];
+                const values = [stats.min, stats.median, stats.avg, stats.max];
                 elements.forEach((id, index) => {
                     const element = document.getElementById(id);
-                    element.textContent = index < 4 ? values[index].toFixed(4) + '%' : values[index];
-                    const shouldWarn = (index < 4 && values[index] > state.acceptableRangeLimit) ||
-                        (index === 4 && stats.outliersCount > 0);
+                    element.textContent = values[index].toFixed(4) + '%';
+                    const shouldWarn = values[index] > state.acceptableRangeLimit;
                     element.classList.toggle('outliers-warning', shouldWarn);
                 });
+
+                // Display current visible time window (extended by one estimated interval like stats calculation)
+                const windowEl = document.getElementById('timeWindowDisplay');
+                if (windowEl) {
+                    const data = this.getVisibleData();
+                    if (data.length > 1) {
+                        const first = data[0].date;
+                        const last = data[data.length - 1].date;
+                        const baseMinutes = (last.getTime() - first.getTime()) / (1000 * 60);
+                        const avgInterval = baseMinutes / (data.length - 1);
+                        const totalMinutes = baseMinutes + avgInterval; // extended window
+                        if (totalMinutes < 60) {
+                            windowEl.textContent = `${Math.round(totalMinutes)} mins`;
+                        } else if (totalMinutes < 1440) {
+                            const hours = Math.floor(totalMinutes / 60);
+                            const minutes = Math.round(totalMinutes % 60);
+                            windowEl.textContent = `${hours}h ${minutes}m`;
+                        } else {
+                            const days = Math.floor(totalMinutes / 1440);
+                            const hours = Math.floor((totalMinutes % 1440) / 60);
+                            windowEl.textContent = `${days}d ${hours}h`;
+                        }
+                    } else {
+                        windowEl.textContent = '-';
+                    }
+                }
+
+                // Update current threshold display
+                const thresholdDisplay = document.getElementById('currentThresholdDisplay');
+                if (thresholdDisplay) {
+                    thresholdDisplay.textContent = `${state.acceptableRangeLimit}%`;
+                }
+
+                // Update time outside threshold
+                const timeElement = document.getElementById('timeOutsideThreshold');
+                if (stats.timeOutside < 60) {
+                    timeElement.textContent = `${Math.round(stats.timeOutside)} mins (${stats.timePercentage.toFixed(2)}%)`;
+                } else if (stats.timeOutside < 1440) {
+                    const hours = Math.floor(stats.timeOutside / 60);
+                    const minutes = Math.round(stats.timeOutside % 60);
+                    timeElement.textContent = `${hours}h ${minutes}m (${stats.timePercentage.toFixed(2)}%)`;
+                } else {
+                    const days = Math.floor(stats.timeOutside / 1440);
+                    const hours = Math.floor((stats.timeOutside % 1440) / 60);
+                    timeElement.textContent = `${days}d ${hours}h (${stats.timePercentage.toFixed(2)}%)`;
+                }
+
+                // Turn red if any time is spent outside the threshold (> 0 minutes)
+                //const shouldWarnTime = stats.timeOutside > 0;
+                //timeElement.classList.toggle('outliers-warning', shouldWarnTime);
+
+                // Turn red if time percentage spent outside the threshold (> 5%)
+                const shouldWarnTime = stats.timePercentage > 5;
+                timeElement.classList.toggle('outliers-warning', shouldWarnTime);
+
             },
             clearStats() {
-                ['minDiff', 'medianDiff', 'avgDiff', 'maxDiff', 'outliersCount'].forEach(id => {
+                ['minDiff', 'medianDiff', 'avgDiff', 'maxDiff', 'timeOutsideThreshold'].forEach(id => {
                     const element = document.getElementById(id);
                     element.textContent = '-';
                     element.classList.remove('outliers-warning');
                 });
+
+                const windowEl = document.getElementById('timeWindowDisplay');
+                if (windowEl) windowEl.textContent = '-';
+
+                // Clear threshold analysis grid
+                const grid = document.getElementById('thresholdAnalysisGrid');
+                if (grid) grid.innerHTML = '';
             }
         };
 
@@ -1082,6 +1519,12 @@
                 state.chart.destroy();
                 chartManager.create();
                 statsManager.update();
+                // mark button as saved
+                const btn = document.getElementById('updateChartBtn');
+                if (btn) {
+                    btn.classList.remove('unsaved');
+                    btn.classList.add('saved');
+                }
             } else {
                 alert('Please paste some data first.');
             }
@@ -1134,6 +1577,18 @@
                     if (state.chart) chartManager.updateThreshold();
                 });
                 input._listenerAdded = true;
+            }
+
+            // Track textarea changes for unsaved indicator
+            const dataTextarea = document.getElementById('dataTextarea');
+            const updateBtn = document.getElementById('updateChartBtn');
+            if (dataTextarea && updateBtn && !dataTextarea._listenerAdded) {
+                const markUnsaved = () => {
+                    updateBtn.classList.remove('saved');
+                    updateBtn.classList.add('unsaved');
+                };
+                ['input', 'change', 'paste'].forEach(evt => dataTextarea.addEventListener(evt, markUnsaved));
+                dataTextarea._listenerAdded = true;
             }
 
             console.timeEnd('Total initialization');
