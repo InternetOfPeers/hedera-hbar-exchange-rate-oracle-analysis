@@ -17,7 +17,7 @@ The `update-chart.sh` script serves as a central point for updating the `index.h
 1. Fetches the latest HBAR price data from [CoinMarketCap](https://coinmarketcap.com/currencies/hedera/) (1 day with 5 mins interval + 10 days with 15 mins interval) and update the corresponding `./data/cmc-hbar-prices.csv` file.
 2. Fetches the latest HBAR exchange rate using the [Public Hashgraph Mirror Node Exchange Rate APIs](https://mainnet.mirrornode.hedera.com/api/v1/docs/#/network/getNetworkExchangeRate) (rate updated hourly) and update the corresponding `./data/hedera-hbar-prices.csv` file.
 3. Fills the missing data points for the Hedera Exchange Rate vs CMC and merges the two files into the temporary file `./build/uncompressed-hbar-prices.csv`. You can copy & paste this data into the chart directly, if you want.
-4. Compress the merged data, copy the `./src/index.html` page into the `./release/index.html` and update it with compressed data.
+4. Compress the merged data, update the `./src/index.html` page, and copy all the updated resources into the `./release` folder.
 
 The `data` folder contains data already downloaded and processed. Considering it's immutable, I prefer to keep a version in the repo, but if you want you can simply remove those files and start from scratch. By default, the scripts will take the last 10 days of data.
 
@@ -62,13 +62,3 @@ The `data` folder contains data already downloaded and processed. Considering it
 [2025-08-27 00:27:04:555620000] WRITER - Compressing CSV data...Done.
 [2025-08-27 00:27:04:574304000] WRITER - Updating HTML file...Done.
 ```
-
-## Possible improvements
-
-### Features
-
-- Expand the stats about "Outliers Data Point Count" i.e., how they spread across different "Acceptable Range Threshold" percentages.
-
-### Tech
-
-- No external website dependency. Embed the dependencies or provide them from a single point.
