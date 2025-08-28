@@ -161,8 +161,6 @@
             }
         });
 
-        // Removed duplicate state property reassignments
-
         // Utility functions
         const utils = {
             parseData(s) { const lines = s.trim().split(/\n+/); const out = []; for (let i = 1; i < lines.length; i++) { const line = lines[i]; if (!line) continue; const parts = line.split(/[\t,]/); if (parts.length < 3) continue; const ds = parts[0].trim(); const cmc = parseFloat(parts[1]); const hed = parseFloat(parts[2]); if (isNaN(cmc) || isNaN(hed)) continue; let date; if (/^\d+$/.test(ds)) { const ts = parseInt(ds, 10); date = new Date(ts < 10000000000 ? ts * 1000 : ts); } else { date = new Date(ds.replace('T', ' ')); } if (!isNaN(date.getTime())) out.push({ date, cmc, hedera: hed, percentDiff: ((hed - cmc) / cmc) * 100 }); } out.sort((a, b) => a.date - b.date); return out; },

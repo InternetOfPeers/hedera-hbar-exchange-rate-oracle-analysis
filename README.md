@@ -4,13 +4,13 @@
 
 The Hedera HBAR Exchange Rate Oracle Analysis repo contains an interactive chart serving especially as data analysis and support for the discussion around the Hedera Improvement Proposal [HIP-1264: Dollar-denominated values](https://github.com/hiero-ledger/hiero-improvement-proposals/pull/1264).
 
-Or, you can just be here to play with the [live interactive chart](https://internetofpeers.org/hedera-hbar-exchange-rate-oracle-analysis/release/index.html).
+Or, you can just be here to play with the [live interactive chart](https://internetofpeers.org/hedera-hbar-exchange-rate-oracle-analysis/release).
 
 ## Update the data
 
 The interactive chart is a static HTML page. It contains a static compressed version of the CSV data, but you can paste new data and refresh the visualization. Data is managed and displayed in UTC format.
 
-The external references are the [chart.js](https://www.chartjs.org/) library and related plugins, plus the [pako](https://github.com/nodeca/pako) library for decompression. Compression is made via bash scripts during the data update process.
+The external references are the [chart.js](https://www.chartjs.org/) library and related plugins, plus the [pako](https://github.com/nodeca/pako) library for decompression. All libraries are minified and included in the `./src/contrib` folder. Compression is made via bash scripts during the data update process.
 
 The `update-chart.sh` script serves as a central point for updating the `index.html` page with fresh data. In particular the script:
 
