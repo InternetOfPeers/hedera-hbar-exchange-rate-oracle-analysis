@@ -289,17 +289,17 @@ fill_missing_data() {
     local missing_file=$2
     local temp_new_data=$(mktemp)
     local temp_merged=$(mktemp)
-    
-    local missing_count=$(wc -l < "$missing_file")
-    
+
+    local missing_count=$(wc -l < "$missing_file" | awk '{print $1}')
+
     if [[ $missing_count -eq 0 ]]; then
         log "No missing data to fill"
         rm -f "$temp_new_data" "$temp_merged"
         return 0
     fi
-    
-    log "Filling $missing_count missing hours..."
-    
+
+    log "Filling $missing_count missing hour$([ $missing_count -gt 1 ] && echo -n s)..."
+
     # Fetch data for each missing timestamp
     local filled_count=0
     local failed_count=0

@@ -128,7 +128,7 @@ merge_csv_files() {
         echo "ERROR: Failed to parse Hedera CSV" >&2
         return 1
     fi
-    local hedera_count=$(wc -l < "$temp_hedera")
+    local hedera_count=$(wc -l < "$temp_hedera" | awk '{print $1}')
     echo "Done. Loaded $hedera_count Hedera price points"
     
     echo -n "$(timestamp) Reading CMC CSV file... "
@@ -137,7 +137,7 @@ merge_csv_files() {
         echo "ERROR: Failed to parse CMC CSV" >&2
         return 1
     fi
-    local cmc_count=$(wc -l < "$temp_cmc")
+    local cmc_count=$(wc -l < "$temp_cmc" | awk '{print $1}')
     echo "Done. Loaded $cmc_count CMC price points"
     
     if [ "$cmc_count" -eq 0 ]; then

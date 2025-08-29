@@ -47,15 +47,15 @@ The `data` folder contains data already downloaded and processed. Considering it
 [2025-08-27 00:27:03:832710000] HEDERA - Found 1 missing hours
 [2025-08-27 00:27:03:842192000] HEDERA - Missing timestamps:
 [2025-08-27 00:27:03:859943000] HEDERA -   1755712800 (2025-08-20T18:00:00Z)
-[2025-08-27 00:27:03:895263000] HEDERA - Filling        1 missing hours...
+[2025-08-27 00:27:03:895263000] HEDERA - Filling 1 missing hours...
 [2025-08-27 00:27:03:912595000] HEDERA - Fetching data for missing timestamp: 1755712800 (2025-08-20T18:00:00Z)
 [2025-08-27 00:27:04:090685000] HEDERA - ✓ Filled data for 2025-08-20T18:00:00Z
 [2025-08-27 00:27:04:212897000] HEDERA - Successfully filled: 1, Failed: 0
 [2025-08-27 00:27:04:222970000] HEDERA - Merging new data with existing CSV...
 [2025-08-27 00:27:04:257468000] HEDERA - Successfully updated CSV file with 1 new records
 [2025-08-27 00:27:04:291208000] HEDERA - Process completed successfully
-[2025-08-27 00:27:04:333914000] MERGER - Reading Hedera CSV file... Done. Loaded      240 Hedera price points
-[2025-08-27 00:27:04:371924000] MERGER - Reading CMC CSV file... Done. Loaded     1665 CMC price points
+[2025-08-27 00:27:04:333914000] MERGER - Reading Hedera CSV file... Done. Loaded 240 Hedera price points
+[2025-08-27 00:27:04:371924000] MERGER - Reading CMC CSV file... Done. Loaded 1665 CMC price points
 [2025-08-27 00:27:04:410237000] MERGER - Merging data... Done. Merged 1623 data points
 [2025-08-27 00:27:04:464771000] MERGER - Writing merged CSV... Done. Data saved to: ./scripts/../build/uncompressed-hbar-prices.csv
 [2025-08-27 00:27:04:493596000] MERGER - Merge completed successfully.

@@ -34,11 +34,10 @@ TEMP_FILE=$(mktemp)
 sed "s|compressedCsvData: \"[^\"]*\"|compressedCsvData: \"$COMPRESSED_DATA\"|" "$HTML_FILE" > "$TEMP_FILE"
 
 # Move temp file to the release folder
+mkdir -p "$PROJECT_ROOT/release/contrib"
 mv "$TEMP_FILE" "$DEST_FILE"
 
 # Copy the css and all js files in the contrib folder
-mkdir -p "$PROJECT_ROOT/release/contrib"
 cp "$PROJECT_ROOT/src/index.css" "$PROJECT_ROOT/release/" 2>/dev/null
-cp "$PROJECT_ROOT/src/contrib/"* "$PROJECT_ROOT/release/contrib/" 2>/dev/null
-
+cp -R "$PROJECT_ROOT/src/contrib" "$PROJECT_ROOT/release/"
 echo "Done."
