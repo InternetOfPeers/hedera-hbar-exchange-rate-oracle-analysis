@@ -70,7 +70,7 @@ get_last_timestamp() {
 calculate_hbar_price() {
     local cent_equivalent=$1
     local hbar_equivalent=$2
-    echo "scale=8; $cent_equivalent / $hbar_equivalent / 100" | bc -z
+    echo "scale=8; $cent_equivalent / $hbar_equivalent / 100" | bc | xargs printf "%.8f" 
 }
 
 # Function to make API request
@@ -179,7 +179,7 @@ parse_response_for_timestamp() {
 fetch_missing_data() {
     local missing_timestamp=$1
     local query_timestamp=$((missing_timestamp + 3600))  # Query 1 hour ahead
-    
+
     log "Fetching data for missing timestamp: $missing_timestamp ($(timestamp_to_date $missing_timestamp))"
     
     if response=$(make_api_request "$query_timestamp"); then
@@ -310,7 +310,7 @@ fill_missing_data() {
         if [[ -n "$missing_timestamp" ]]; then
             if new_data=$(fetch_missing_data "$missing_timestamp"); then
                 echo "$new_data" >> "$temp_new_data"
-                ((filled_count++))
+		filled_count=$((filled_count + 1))
                 log "✓ Filled data for $(timestamp_to_date $missing_timestamp)"
             else
                 ((failed_count++))
