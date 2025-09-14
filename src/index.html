@@ -34,8 +34,8 @@
             <button onclick="resetZoom()">Reset Zoom</button>
             <button id="last1dBtn" onclick="showLastXDays(1)">Last 1 Day</button>
             <button id="last3dBtn" onclick="showLastXDays(3)">Last 3 Days</button>
-            <button id="last7dBtn" onclick="showLastXDays(7)" class="active">Last 7 Days</button>
-            <button id="last14dBtn" onclick="showLastXDays(14)">Last 14 Days</button>
+            <button id="last7dBtn" onclick="showLastXDays(7)">Last 7 Days</button>
+            <button id="last14dBtn" onclick="showLastXDays(14)" class="active">Last 14 Days</button>
             <button id="last30dBtn" onclick="showLastXDays(30)">Last 30 Days</button>
             <button id="allDataBtn" onclick="showAllData()">Show All Data</button>
             <!--<button onclick="togglePercentageDiff()">Toggle % Difference</button>-->
@@ -993,7 +993,7 @@
             chartManager.create();
 
             // Show initial data
-            showLastXDays(7);
+            showLastXDays(14);
 
             // Update stats
             statsManager.update();
