@@ -29,9 +29,15 @@ echo "Done."
 # Update HTML file
 echo -n "[$(date '+%Y-%m-%d %H:%M:%S:%N')] WRITER - Updating HTML file..."
 TEMP_FILE=$(mktemp)
+cp $HTML_FILE $TEMP_FILE
 
-# Replace the compressedCsvData line
-sed "s|compressedCsvData: \"[^\"]*\"|compressedCsvData: \"$COMPRESSED_DATA\"|" "$HTML_FILE" > "$TEMP_FILE"
+# Escape sed meaningful characters
+ESCAPED_REPLACE=$(printf '%s\n' "$COMPRESSED_DATA" | sed -e 's/[\/&]/\\&/g')
+
+# Replace the compressedCsvData line (it cannot be done in the command line anymore because the content became too long)
+sed -i -f - "$TEMP_FILE" << EOF
+s/compressedCsvData: "[^\"]*"/compressedCsvData: "$ESCAPED_REPLACE"/
+EOF
 
 # Move temp file to the release folder
 mkdir -p "$PROJECT_ROOT/release/contrib"
