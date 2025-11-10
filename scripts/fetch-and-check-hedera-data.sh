@@ -159,12 +159,12 @@ parse_response_for_timestamp() {
     local current_hour_start=$((current_expiration - 3600))
     local next_hour_start=$((next_expiration - 3600))
     
-    if [[ $target_timestamp -eq $current_hour_start ]]; then
+    if [[ $target_timestamp -eq $current_hour_start || $target_timestamp -eq $current_expiration ]]; then
         # Use current rate
         local price=$(calculate_hbar_price "$current_cent" "$current_hbar")
         echo "$(timestamp_to_date $target_timestamp),$price,$target_timestamp,$current_cent,$current_hbar"
         return 0
-    elif [[ $target_timestamp -eq $next_hour_start ]]; then
+    elif [[ $target_timestamp -eq $next_hour_start || $target_timestamp -eq $next_expiration ]]; then
         # Use next rate
         local price=$(calculate_hbar_price "$next_cent" "$next_hbar")
         echo "$(timestamp_to_date $target_timestamp),$price,$target_timestamp,$next_cent,$next_hbar"
@@ -234,9 +234,11 @@ analyze_missing_hours() {
     log "Analyzing CSV file for missing hours: $csv_file"
     
     # Extract all timestamps from the CSV (skip header)
-    local existing_timestamps=$(tail -n +2 "$csv_file" | cut -d',' -f3 | grep '^[0-9]\+$' | sort -n)
-    
-    if [[ -z "$existing_timestamps" ]]; then
+    local existing_timestamps=$(mktemp)
+    tail -n +2 "$csv_file" | cut -d',' -f3 | grep '^[0-9]\+$' | sort -n > "$existing_timestamps"
+  
+    # File exists and it's not empty 
+    if ! [ -e "$existing_timestamps" ] && [ -s "$existing_timestamps" ]; then
         log "WARNING: No valid timestamp data found in CSV file"
         > "$temp_missing"  # Create empty file
         echo "$temp_missing"
@@ -244,8 +246,8 @@ analyze_missing_hours() {
     fi
     
     # Get the range of timestamps
-    local first_timestamp=$(echo "$existing_timestamps" | head -n 1)
-    local last_timestamp=$(echo "$existing_timestamps" | tail -n 1)
+    local first_timestamp=$(head -n 1 "$existing_timestamps")
+    local last_timestamp=$(tail -n 1 "$existing_timestamps")
     
     # Validate timestamps
     if [[ -z "$first_timestamp" || -z "$last_timestamp" ]]; then
@@ -264,7 +266,7 @@ analyze_missing_hours() {
     > "$temp_missing"  # Clear the file
     
     while [[ $current_timestamp -le $last_timestamp ]]; do
-        if ! echo "$existing_timestamps" | grep -q "^$current_timestamp$"; then
+        if ! grep -q "^$current_timestamp$" "$existing_timestamps"; then
             echo "$current_timestamp" >> "$temp_missing"
             ((missing_count++))
         fi
